@@ -1,26 +1,24 @@
 (ns tweetlog.core
   (:require [permacode.core :as perm]
             [clojure.string :as str]
-            [perm.Qmf6or1t8bjdsKqSpnawvTR9Vo8M4Lp2eNBgDv5AQNK3yR :as c]))
+            [perm.QmTu5JshMoxu7CT9KvhqYjpJKwYYceuDC5dJoYdKMapRN7 :as c]))
 
 (perm/pure
- (def app :tweetlog)
-
- (c/defrule followees-tweets [user author tweet]
-   [:tweetlog/follows user author] (c/by [:user= user])
-   [:tweetlog/tweeted author tweet] (c/by [:user= author]))
+ (c/defrule followee-tweets [user author tweet]
+   [:tweetlog/follows user author] (c/by user)
+   [:tweetlog/tweeted author tweet] (c/by author))
  
  (c/defclause tl-1 [:tweetlog/timeline user -> author tweet]
-   [followees-tweets user author tweet] (c/by app))
+   [followee-tweets user author tweet])
 
  (c/defrule mention [mentioned author tweet]
-   [:tweetlog/tweeted author tweet] (c/by [:user= author])
-   (for [token (str/split tweet #"[ .,;?!]+")])
+   [:tweetlog/tweeted author tweet] (c/by author)
+   (for [token (str/split tweet #"[ .,:?!]+")])
    (when (str/starts-with? token "@"))
    (let [mentioned (subs token 1)]))
 
  (c/defclause tl-2 [:tweetlog/timeline user -> author tweet]
-   [mention user author tweet] (c/by app)
+   [mention user author tweet]
    (let [tweet (str "You were mentioned: " tweet)])))
 
 
